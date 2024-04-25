@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
-use Filament\Forms\Components\Placeholder;
 use Filament\Tables;
 use App\Models\TypeVo;
 use Filament\Forms\Form;
@@ -21,7 +20,9 @@ use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Placeholder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\EquipementResource\Pages;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -172,7 +173,8 @@ class EquipementResource extends Resource
     {
         return $table
             ->columns([
-                    TextColumn::make("numero_vo"),
+                    TextColumn::make("numero_vo")
+                    ->searchable(),
 
                     TextColumn::make("numero_compte")
                         ->label("Numéro compte (débit)"),
@@ -267,8 +269,16 @@ class EquipementResource extends Resource
                     TextColumn::make("numero_operation"),
                 ])
             ->filters([
-                    //
-                ])
+                SelectFilter::make('etat_vo')
+                    ->native(false)
+                    ->options([
+                        "0" => 'Non valide',
+                        "1" => 'En cours',
+                        "2" => 'Suspendu',
+                        "3" => 'Clôturé',
+                        "9" => 'Annulé',
+                    ])
+                ])->deferFilters()
             ->actions([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
