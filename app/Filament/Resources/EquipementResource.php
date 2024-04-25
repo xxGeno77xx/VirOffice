@@ -47,6 +47,7 @@ class EquipementResource extends Resource
                                 try{
 
                                     $result = "";
+
                                     $client = DB::table("client")
                                         ->join("compte", "compte.numero_client", "=", "client.numero_client")
                                         ->whereRaw("numero_compte = ?", [$get("numero_compte")])
@@ -190,7 +191,7 @@ class EquipementResource extends Resource
                             "ANNUELLE" => 'danger',
                             "BIMESTRIELLE" => 'success',
                             "SEMESTRIELLE" => 'danger',
-                            "TRIMESTRIELLE" => 'closed',
+                            "TRIMESTIELLE" => 'closed',
                         }),
 
                     TextColumn::make("montant_total")

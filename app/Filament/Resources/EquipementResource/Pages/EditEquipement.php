@@ -17,7 +17,7 @@ class EditEquipement extends EditRecord
     {
         $record = $this->record;
 
-        abort_if($record->etat_vo != 0, 403, __("Ce virement en en cours. Vous ne pouvez pas le modifier"));
+        abort_if($record->etat_vo != 0, 403, __("Ce virement est en cours. Vous ne pouvez pas le modifier"));
     }
 
 
