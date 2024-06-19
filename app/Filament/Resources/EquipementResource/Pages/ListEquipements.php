@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Imports\EquipementImporter;
 use EightyNine\ExcelImport\ExcelImportAction;
 use App\Filament\Resources\EquipementResource;
+use App\Filament\Resources\EquipementResource\Widgets\PeriodiciteWidget;
 
 class ListEquipements extends ListRecords
 {
@@ -57,5 +58,12 @@ class ListEquipements extends ListRecords
             ->select("vir_office.*", "type_vo.libelle as vo", "libelle_periodicite as periodicite")
             ->orderBy("date_creation", "asc");
             // ->where("date_creation", today());
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            PeriodiciteWidget::class
+        ];
     }
 }

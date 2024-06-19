@@ -161,7 +161,7 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                 'code_utilisateur' => strtoupper(auth()->user()->name),
                 'date_etat' => today(),
                 'taxe' => 'N',                               //strtoupper($row['taxe']),
-                'etat_vo' => 1,
+                'etat_vo' => 0,
                 'numero_operation' => $nextNumeroOperation
             ]);
 
@@ -175,9 +175,8 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
             DB::commit();
 
             Notification::make()
-            ->title('Importé avec succès' )
+            ->title('Importé avec succès')
             ->success()
-            ->persistent()
             ->send();
 
 
@@ -186,9 +185,8 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
             $message = $e->getMessage();
 
             Notification::make()
-                ->title('Erreur procédure' . $message)
+                ->title('Erreur : ' . $message)
                 ->warning()
-                ->persistent()
                 ->send();
 
             DB::rollBack();
@@ -265,12 +263,13 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                     $existingAccounts = DB::table("compte")
                         ->selectRaw("numero_compte")
                         ->whereRaw("numero_compte = ?", $value)
+                        ->whereRaw("code_etat_compte = 1")
                         ->first();
 
                     if (!$existingAccounts) {
 
                         Notification::make()
-                            ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Numéro de compte inexistant'))
+                            ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Numéro de compte inexistant ( débit)'))
                             ->warning()
                             ->send();
                     }
@@ -297,6 +296,7 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                     $existingAccounts = DB::table("compte")
                         ->selectRaw("numero_compte")
                         ->whereRaw("numero_compte = ?", $value)
+                        ->whereRaw("code_etat_compte = 1")
                         ->first();
 
                     if (!$existingAccounts) {
