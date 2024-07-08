@@ -3,7 +3,9 @@
 namespace App\Imports;
 
 use PDO;
+use DateTime;
 use Exception;
+use Throwable;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Compte;
@@ -14,6 +16,7 @@ use App\Models\Equipement;
 use App\Models\Periodicite;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -141,9 +144,11 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
         $stmtComptaMvtProv->bindParam(':utilisateur', $utilisateur, PDO::PARAM_STR); //static  0
 
 
-        
+
+
         try {
- 
+
+
             Equipement::create([
 
                 'numero_vo' => Equipement::max("numero_vo") + 1,
@@ -155,8 +160,8 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                 'nbre_traite' => $row['nbre_traite'],
                 'montant_vo' => $row['montant_vo'],
                 'montant_vo_fin' => $row['montant_vo_fin'],
-                'periode_debut' => Date::excelToDateTimeObject(($row['periode_debut'])) ,
-                'periode_fin' => Date::excelToDateTimeObject(($row['periode_fin'])),
+                'periode_debut' => $this->convertToDateTime($row['periode_debut']),
+                'periode_fin' => $this->convertToDateTime($row['periode_fin']),
                 'com_numero_compte' => $row['com_numero_compte'],
                 'date_creation' => today(),
                 'code_utilisateur' => strtoupper(auth()->user()->name),
@@ -176,9 +181,9 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
             DB::commit();
 
             Notification::make()
-            ->title('Importé avec succès')
-            ->success()
-            ->send();
+                ->title('Importé avec succès')
+                ->success()
+                ->send();
 
 
         } catch (Exception $e) {
@@ -190,12 +195,19 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                 ->warning()
                 ->send();
 
-            DB::rollBack();
 
+            DB::rollBack();
         }
 
     }
 
+
+    public function convertToDateTime($date)
+    {
+         $convertedDate = Date::excelToDateTimeObject($date);
+
+        return $convertedDate;
+    }
 
     public function rules(): array
     {
@@ -206,6 +218,37 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
 
         return [
+
+
+            '*.periode_debut' => function ($attribute, $value, $onFailure, )  {
+
+                if (gettype($value) == "string") {
+
+                    $onFailure('Ligne ' . $this->getRowNumber() + 1 . ': La date de la période début doit être au format DATE');
+
+                    Notification::make()
+                    ->title($onFailure('Ligne '.$this->getRowNumber() + 1 .': La date de la période début doit être au format DATE'))
+                    ->warning()
+                    ->send();
+                }
+
+                  
+                
+            },
+
+            '*.periode_fin' => function ($attribute, $value, $onFailure, )  {
+
+                if (gettype($value) == "string") {
+
+                    $onFailure('Ligne ' . $this->getRowNumber() + 1 . ': La date de la période fin doit être au format DATE');
+
+                    Notification::make()
+                    ->title($onFailure('Ligne '.$this->getRowNumber() + 1 .': La date de la période fin doit être au format DATE'))
+                    ->warning()
+                    ->send();
+                }
+                
+            },
 
             '*.code_type_vo' => function ($attribute, $value, $onFailure, ) use ($existingTypeVoArray) {
 
@@ -319,8 +362,6 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
     {
         return 1000;
 
-
     }
-
 
 }

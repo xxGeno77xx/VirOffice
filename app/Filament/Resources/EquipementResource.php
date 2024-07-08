@@ -43,52 +43,6 @@ class EquipementResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    // public static function infolist(Infolist $infolist): Infolist
-    // {
-    //     return $infolist
-    //         ->schema([
-    //             TextEntry::make('etat_vo')
-    //                 ->label("Etat du virement")
-    //                  ->formatStateUsing(function ($state): string {
-
-    //                     $result = "";
-
-    //                     switch ($state) {
-    //                         case 0:
-    //                             $result = 'Non valide';
-    //                             break;
-
-    //                         case 1:
-    //                             $result = 'En cours';
-    //                             break;
-
-    //                         case 2:
-    //                             $result = 'Suspendu';
-    //                             break;
-
-    //                         case 9:
-    //                             $result = 'Annulé';
-    //                             break;
-
-    //                         case 3:
-    //                             $result = 'Clôturé';
-    //                             break;
-    //                     }
-
-    //                     return $result;
-
-    //                 })
-    //                 ->badge()
-    //                 ->color(fn(string $state): string => match ($state) {
-    //                     "0" => 'danger',
-    //                     "1" => 'success',
-    //                     "2" => 'warning',
-    //                     "3" => 'danger',
-    //                     "9" => 'closed',
-    //                 }),
-    //         ]);
-    // }
-
     public static function form(Form $form): Form
     {
         return $form
@@ -343,7 +297,7 @@ class EquipementResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+
                     ExportBulkAction::make()->color("primary"),
                     BulkAction::make("valider")
                     ->label("Valider")
@@ -377,7 +331,7 @@ class EquipementResource extends Resource
         return [
             'index' => Pages\ListEquipements::route('/'),
             'create' => Pages\CreateEquipement::route('/create'),
-            'edit' => Pages\EditEquipement::route('/{record}/edit'),
+            // 'edit' => Pages\EditEquipement::route('/{record}/edit'),
         ];
     }
 
