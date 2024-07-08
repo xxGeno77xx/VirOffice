@@ -20,6 +20,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Validators\Failure;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Illuminate\Validation\ValidationException;
@@ -60,7 +61,6 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
         $second_null = null; //  static
         $second_zero = 0; //  static
         $third_zero = 0; //  static
-        //$num_mvt =946640; // output param
         $aOne = 1; //static   =  code application
         $thirdNull = null; //static
         $xof = 'XOF'; //static
@@ -141,8 +141,9 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
         $stmtComptaMvtProv->bindParam(':utilisateur', $utilisateur, PDO::PARAM_STR); //static  0
 
 
+        
         try {
-
+ 
             Equipement::create([
 
                 'numero_vo' => Equipement::max("numero_vo") + 1,
@@ -154,8 +155,8 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                 'nbre_traite' => $row['nbre_traite'],
                 'montant_vo' => $row['montant_vo'],
                 'montant_vo_fin' => $row['montant_vo_fin'],
-                'periode_debut' => Carbon::parse($row['periode_debut'])->format("Y-m-d"),
-                'periode_fin' => Carbon::parse($row['periode_fin'])->format("Y-m-d"),
+                'periode_debut' => Date::excelToDateTimeObject(($row['periode_debut'])) ,
+                'periode_fin' => Date::excelToDateTimeObject(($row['periode_fin'])),
                 'com_numero_compte' => $row['com_numero_compte'],
                 'date_creation' => today(),
                 'code_utilisateur' => strtoupper(auth()->user()->name),
