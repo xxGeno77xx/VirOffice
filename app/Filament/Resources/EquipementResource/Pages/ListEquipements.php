@@ -28,18 +28,6 @@ class ListEquipements extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Actions\CreateAction::make(),
-
-            // ExcelImportAction::make()
-            //     ->label("importer")
-            //     ->color(Color::Cyan)
-            //     ->after(function(){
-
-            //         Notification::make()
-            //         ->title('Importé avec succès')
-            //         ->success()
-            //         ->send();
-            //     }),
 
             ExcelImportAction::make("upload")
             ->label("Importer")
