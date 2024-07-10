@@ -76,7 +76,7 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
 
 
-        $stmtInsertionMvtCaisseAG = $pdo->prepare("begin insertion_mvt_caisse_ag_filament(:lib_mvt, :taxe_total_taf, :zero, :sysDate, :sens, :codeOp, :num_op, :null,:code_guichet, :code_guichet_second, :bureau_poste, :second_null, :second_zero, :third_zero, :num_mvt, :aOne, :thirdNull , :xof, :numeroCompte, :num_op, :total_taf, :taxe, :lastZero, :utilisateur); end;");
+        $stmtInsertionMvtCaisseAG = $pdo->prepare("begin gepar.insertion_mvt_caisse_ag_filament(:lib_mvt, :taxe_total_taf, :zero, :sysDate, :sens, :codeOp, :num_op, :null,:code_guichet, :code_guichet_second, :bureau_poste, :second_null, :second_zero, :third_zero, :num_mvt, :aOne, :thirdNull , :xof, :numeroCompte, :num_op, :total_taf, :taxe, :lastZero, :utilisateur); end;");
         $stmtInsertionMvtCaisseAG->bindParam(':lib_mvt', $lib_mvt, PDO::PARAM_STR);
         $stmtInsertionMvtCaisseAG->bindParam(':taxe_total_taf', $taxe_total_taf, PDO::PARAM_INT);
         $stmtInsertionMvtCaisseAG->bindParam(':zero', $zero, PDO::PARAM_INT);
@@ -113,7 +113,7 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
         $pdo = DB::getPdo();
 
-        $stmtComptaMvtProv = $pdo->prepare("begin compta_mvt_prov_filament(:num_mvt,
+        $stmtComptaMvtProv = $pdo->prepare("begin gepar.compta_mvt_prov_filament(:num_mvt,
             :deux,
             :numeroCompte,
             :null,
