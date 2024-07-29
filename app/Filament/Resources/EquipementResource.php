@@ -170,10 +170,6 @@ class EquipementResource extends Resource
                             }),
                     ])
 
-
-
-
-
             ]);
     }
 
@@ -224,17 +220,14 @@ class EquipementResource extends Resource
 
                 TextColumn::make("periode_debut")
                     ->label("période début")
-                    ->date("d-m-y"),
+                    ->date("d-m-Y"),
 
                 TextColumn::make("periode_fin")
                     ->label("période fin")
-                    ->date("d-m-y"),
+                    ->date("d-m-Y"),
 
                 TextColumn::make("com_numero_compte")
                     ->label("Compte à créditer"),
-
-                    // TextColumn::make("taxe")
-                    // ->label("Taxe"),
 
                 TextColumn::make("etat_vo")
                     ->label("Etat")

@@ -15,5 +15,4 @@ class Anomalie extends Model
 
     protected $primaryKey ="REFERENCE_MVT";
 
-    // protected $primaryKey = "numero_vo";
 }
