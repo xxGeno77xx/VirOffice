@@ -52,8 +52,6 @@ class EquipementResource extends Resource
                         Placeholder::make("client")
                             ->content(function ($state, $get) {
 
-                                try {
-
                                     $result = "";
 
                                     $client = DB::table("client")
@@ -67,9 +65,6 @@ class EquipementResource extends Resource
                                         $result = "Client non trouvé";
 
                                     return $result;
-                                } catch (\Exception $e) {
-
-                                }
 
                             }),
 

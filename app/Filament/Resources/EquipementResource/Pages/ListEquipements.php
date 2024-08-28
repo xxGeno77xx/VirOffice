@@ -13,6 +13,7 @@ use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\DB;
 use App\Imports\EquipementImporterX;
 use Filament\Livewire\Notifications;
+use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,18 @@ class ListEquipements extends ListRecords
             ->label("Importer")
                 ->color(Color::Cyan)
                 ->use(EquipementImporterX::class)
+                ->after(function(){
+                    
+                    Notification::make()
+                    ->title('Importé avec succès')
+                    ->success()
+                    ->send();
+                }),
+
+                Action::make("report")
+                ->label("Rapport d'erreurs")
+                ->color(Color::Red)
+                    ->action(fn()=> Storage::download('errors.txt'))
                 
 
         ];

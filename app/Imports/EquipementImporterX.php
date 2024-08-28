@@ -10,18 +10,14 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Compte;
 use App\Models\TypeVo;
-use App\Models\Anomalie;
-use App\Models\Operation;
 use App\Models\Equipement;
 use App\Models\Periodicite;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Filament\Support\Colors\Color;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Maatwebsite\Excel\Concerns\Importable;
@@ -31,11 +27,12 @@ use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\RemembersRowNumber;
 
-class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, WithValidation
+class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, WithValidation, SkipsOnFailure, WithBatchInserts
 {
-    use RemembersRowNumber, Importable;
+    use RemembersRowNumber, Importable, SkipsFailures;
     /**
      * @param array $row
      *
@@ -102,8 +99,9 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
         $stmtInsertionMvtCaisseAG->bindParam(':lastZero', $lastZero, PDO::PARAM_INT); //static  0
         $stmtInsertionMvtCaisseAG->bindParam(':utilisateur', $utilisateur, PDO::PARAM_STR); //static  0
 
-        ////Second proccedure compta_mvt_prov
 
+
+        ////Second proccedure compta_mvt_prov
 
         $deux = 2; // static
         $fourthNull = null; //static
@@ -151,7 +149,7 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
             Equipement::create([
 
-                'numero_vo' => Equipement::max("numero_vo") + 1,
+                'numero_vo' => DB::getSequence()->nextValue('spt.numero_vo'),
                 'numero_compte' => $row["numero_compte"],
                 'libelle' => $row["libelle"],
                 'code_type_vo' => $row['code_type_vo'],
@@ -180,10 +178,7 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
             DB::commit();
 
-            Notification::make()
-                ->title('Importé avec succès')
-                ->success()
-                ->send();
+          
 
 
         } catch (Exception $e) {
@@ -199,12 +194,14 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
             DB::rollBack();
         }
 
+
+
     }
 
 
     public function convertToDateTime($date)
     {
-         $convertedDate = Date::excelToDateTimeObject($date);
+        $convertedDate = Date::excelToDateTimeObject($date);
 
         return $convertedDate;
     }
@@ -216,48 +213,35 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
         $existingPeriodiciteArray = Periodicite::pluck("code_periodicite")->toArray();
 
-
         return [
 
-
-            '*.periode_debut' => function ($attribute, $value, $onFailure, )  {
+            '*.periode_debut' => function ($attribute, $value, $onFailure, ) {
 
                 if (gettype($value) == "string") {
 
                     $onFailure('Ligne ' . $this->getRowNumber() + 1 . ': La date de la période début doit être au format DATE');
 
-                    Notification::make()
-                    ->title($onFailure('Ligne '.$this->getRowNumber() + 1 .': La date de la période début doit être au format DATE'))
-                    ->warning()
-                    ->send();
                 }
 
-                  
-                
             },
 
-            '*.periode_fin' => function ($attribute, $value, $onFailure, )  {
+            '*.periode_fin' => function ($attribute, $value, $onFailure, ) {
 
                 if (gettype($value) == "string") {
 
                     $onFailure('Ligne ' . $this->getRowNumber() + 1 . ': La date de la période fin doit être au format DATE');
 
-                    Notification::make()
-                    ->title($onFailure('Ligne '.$this->getRowNumber() + 1 .': La date de la période fin doit être au format DATE'))
-                    ->warning()
-                    ->send();
                 }
-                
+
             },
 
             '*.code_type_vo' => function ($attribute, $value, $onFailure, ) use ($existingTypeVoArray) {
 
                 if (!in_array($value, $existingTypeVoArray)) {
 
-                    Notification::make()
-                        ->title($onFailure('Erreur code type vo'))
-                        ->warning()
-                        ->send();
+
+                    $onFailure('Erreur code type vo');
+
                 }
             },
 
@@ -265,10 +249,9 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
                 if (!in_array($value, $existingPeriodiciteArray)) {
 
-                    Notification::make()
-                        ->title($onFailure('Erreur code periodicité'))
-                        ->warning()
-                        ->send();
+
+                    $onFailure('Erreur code periodicité');
+
                 }
             },
 
@@ -280,10 +263,6 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
                     $onFailure('Ligne ' . $this->getRowNumber() + 1 . ': La valeur de la taxe doit être soit "O", soit "N" (en majuscules)');
 
-                    Notification::make()
-                        ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': La valeur de la taxe doit être soit "O", soit "N" (en majuscules)'))
-                        ->warning()
-                        ->send();
                 }
             },
 
@@ -291,17 +270,13 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
                 if (!is_numeric($value)) {
 
-                    Notification::make()
-                        ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Un numéro de compte ne doit contenir que des  chiffres (Débit)'))
-                        ->warning()
-                        ->send();
+                    $onFailure('numéro de compte ne doit contenir que des  chiffres (Débit)');
 
                 } elseif (strlen($value) < 16) {
 
-                    Notification::make()
-                        ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Un numéro de compte (débit) doit contenir 16 chiffres (Débit)'))
-                        ->warning()
-                        ->send();
+
+                    $onFailure('Un numéro de compte (débit) doit contenir 16 chiffres (Débit)');
+
                 } else {
 
                     $existingAccounts = DB::table("compte")
@@ -312,10 +287,8 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
                     if (!$existingAccounts) {
 
-                        Notification::make()
-                            ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Numéro de compte inexistant ( débit)'))
-                            ->warning()
-                            ->send();
+                        $onFailure('Numéro de compte inexistant ( débit)');
+
                     }
                 }
             },
@@ -324,17 +297,12 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
                 if (!is_numeric($value)) {
 
-                    Notification::make()
-                        ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Un numéro de compte ne doit contenir que des  chiffres (Débit)'))
-                        ->warning()
-                        ->send();
+                    $onFailure('Un numéro de compte ne doit contenir que des  chiffres (Crédit)');
 
                 } elseif (strlen($value) < 16) {
 
-                    Notification::make()
-                        ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Un numéro de compte doit contenir 16 chiffres (Débit)'))
-                        ->warning()
-                        ->send();
+                    $onFailure('Un numéro de compte doit contenir 16 chiffres (Crédit)');
+
                 } else {
 
                     $existingAccounts = DB::table("compte")
@@ -345,17 +313,46 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
                     if (!$existingAccounts) {
 
-                        Notification::make()
-                            ->title($onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Numéro de compte (Crédit) inexistant'))
-                            ->warning()
-                            ->send();
+                        $onFailure('Numéro de compte (Crédit) inexistant');
+
                     }
                 }
             },
 
         ];
+
     }
 
+
+    public function onFailure(Failure ...$failures)
+    {
+        $i = 0;
+
+        if ($failures) {
+
+            if (Storage::exists('errors.txt')) {
+
+                Storage::delete('errors.txt');
+            }
+            
+            Storage::put('errors.txt', 'Erreurs lors de l\'importation (' . today()->format("d/m/Y") . ")");
+
+            foreach ($failures as $failure) {
+
+                $i++;
+
+                Storage::append('errors.txt', "Ligne " . $failure->row() . " :" . $failure->attribute());
+                
+            }
+
+            Notification::make()
+                ->title(('Nombre erreurs retrouvées: ' . $i))
+                ->body("Consultez le fichier d'erreurs.")
+                ->warning()
+                ->send();
+        }
+
+    }
 
 
     public function batchSize(): int
