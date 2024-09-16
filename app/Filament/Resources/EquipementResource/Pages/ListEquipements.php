@@ -45,7 +45,12 @@ class ListEquipements extends ListRecords
                 Action::make("report")
                 ->label("Rapport d'erreurs")
                 ->color(Color::Red)
-                    ->action(fn()=> Storage::download('errors.txt'))
+                    ->action(fn()=> Storage::download('errors.txt')),
+
+                    Action::make("numero")
+                    ->label("Numéro VO suivant")
+                    ->color(Color::Red)
+                    ->url(route('increment')),
                 
 
         ];

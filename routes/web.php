@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,3 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+route::get('#', function(){
+
+return DB::getSequence()->nextValue('spt.numero_vo');
+
+})->name("increment");

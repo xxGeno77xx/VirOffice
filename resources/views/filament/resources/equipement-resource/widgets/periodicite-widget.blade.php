@@ -14,7 +14,7 @@
         
             <br>
 
-            <p style="color:red">L'importation s'arrêtera à la première ligne dont l'une des cellules ne respecte pas certaines règles. Un message  vous sera affiché pour identifier l'erreur.</p>
+            <p style="color:red">Tout le fichier sera parcouru et les lignes correctes seront importées. Les lignes erronnées seront omises et reportées dans  un fichier récupérable en cliquant sur le bouton RAPPORT D'ERREURS.</p>
 
         
             <br>
@@ -22,7 +22,6 @@
         <x-filament::button href="files/example_file.xlsx" tag="a">
             Télécharger un fichier exemple ici
         </x-filament::button>
-
 
 
     </x-filament::section>

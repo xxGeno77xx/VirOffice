@@ -178,8 +178,6 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
 
             DB::commit();
 
-          
-
 
         } catch (Exception $e) {
 
@@ -190,10 +188,8 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
                 ->warning()
                 ->send();
 
-
             DB::rollBack();
         }
-
 
 
     }
@@ -214,6 +210,16 @@ class EquipementImporterX implements ToModel, WithHeadingRow, SkipsEmptyRows, Wi
         $existingPeriodiciteArray = Periodicite::pluck("code_periodicite")->toArray();
 
         return [
+
+            '*.libelle' => function ($attribute, $value, $onFailure, ) {
+
+                if (strlen($value) > 30) {
+
+                    $onFailure('Ligne ' . $this->getRowNumber() + 1 . ': Le libellé doit contenir moins de 30 caractères');
+
+                }
+
+            },
 
             '*.periode_debut' => function ($attribute, $value, $onFailure, ) {
 
