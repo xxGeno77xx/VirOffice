@@ -287,8 +287,10 @@ class EquipementResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
 
                     ExportBulkAction::make()->color("primary"),
+
                     BulkAction::make("valider")
                     ->label("Valider")
+                    ->requiresConfirmation()
                     ->icon("heroicon-o-check-circle")
                     ->color('success')
                     ->action(fn (Collection $records) => $records->each->update(["etat_vo" => 1]))
@@ -296,6 +298,20 @@ class EquipementResource extends Resource
                         Notification::make()
                                 ->title('Validé(s)')
                                 ->success()
+                                ->send();
+                    }),
+
+                    BulkAction::make("cancel")
+                    ->requiresConfirmation()
+                    ->label("annuler")
+                    ->icon("heroicon-o-archive-box-x-mark")
+                    ->color(Color::Gray)
+                    ->action(fn (Collection $records) => $records->each->update(["etat_vo" => 9]))
+                    ->after(function(){
+                        Notification::make()
+                                ->title('Annulé(s)')
+                                ->color(Color::Gray)
+                                ->icon("heroicon-o-archive-box-x-mark")
                                 ->send();
                     })
                     
